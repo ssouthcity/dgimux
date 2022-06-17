@@ -4,24 +4,44 @@ import "github.com/bwmarrin/discordgo"
 
 type InteractionHandlerFunc func(s *discordgo.Session, i *discordgo.InteractionCreate)
 
+type key struct {
+	discordgo.InteractionType
+	string
+}
+
 type Mux struct {
-	handlers map[string]InteractionHandlerFunc
+	handlers map[key]InteractionHandlerFunc
 }
 
 func NewRouter() *Mux {
 	return &Mux{
-		handlers: make(map[string]InteractionHandlerFunc),
+		handlers: make(map[key]InteractionHandlerFunc),
 	}
 }
 
-func (m *Mux) ApplicationCommand(name string, handler InteractionHandlerFunc) {
-	m.handlers[name] = handler
+func (m *Mux) AddInteractionHandler(kind discordgo.InteractionType, id string, handler InteractionHandlerFunc) {
+	m.handlers[key{kind, id}] = handler
 }
 
 func (m *Mux) HandleInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	name := i.ApplicationCommandData().Name
+	kind := i.Type
+	id := m.resolveID(i)
 
-	if h, ok := m.handlers[name]; ok {
+	if h, ok := m.handlers[key{kind, id}]; ok {
 		h(s, i)
 	}
+}
+
+func (m *Mux) resolveID(i *discordgo.InteractionCreate) string {
+	switch i.Type {
+	case discordgo.InteractionApplicationCommand:
+		return i.ApplicationCommandData().Name
+	case discordgo.InteractionApplicationCommandAutocomplete:
+		return i.ApplicationCommandData().Name
+	case discordgo.InteractionMessageComponent:
+		return i.MessageComponentData().CustomID
+	case discordgo.InteractionModalSubmit:
+		return i.ModalSubmitData().CustomID
+	}
+	return ""
 }
