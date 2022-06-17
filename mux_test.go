@@ -1,4 +1,4 @@
-package main
+package dgimux
 
 import (
 	"testing"
@@ -68,5 +68,11 @@ func TestRouter(t *testing.T) {
 		if called {
 			t.Error("interaction handler for 'pong' was called when it shouldn't have been")
 		}
+	})
+
+	t.Run("multiple interaction types are supported", func(t *testing.T) {
+		r.ApplicationCommand("cmd", stubHandler)
+		r.MessageComponent("btn", stubHandler)
+		r.AutoComplete("auto", stubHandler)
 	})
 }

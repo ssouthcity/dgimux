@@ -1,4 +1,4 @@
-package main
+package dgimux
 
 import "github.com/bwmarrin/discordgo"
 
