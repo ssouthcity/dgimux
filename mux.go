@@ -2,7 +2,15 @@ package dgimux
 
 import "github.com/bwmarrin/discordgo"
 
+type InteractionHandler interface {
+	HandleInteraction(s *discordgo.Session, i *discordgo.InteractionCreate)
+}
+
 type InteractionHandlerFunc func(s *discordgo.Session, i *discordgo.InteractionCreate)
+
+func (f InteractionHandlerFunc) HandleInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	f(s, i)
+}
 
 type key struct {
 	discordgo.InteractionType
@@ -10,12 +18,12 @@ type key struct {
 }
 
 type Mux struct {
-	handlers map[key]InteractionHandlerFunc
+	handlers map[key]InteractionHandler
 }
 
 func NewRouter() *Mux {
 	return &Mux{
-		handlers: make(map[key]InteractionHandlerFunc),
+		handlers: make(map[key]InteractionHandler),
 	}
 }
 
@@ -28,7 +36,7 @@ func (m *Mux) HandleInteraction(s *discordgo.Session, i *discordgo.InteractionCr
 	id := m.resolveID(i)
 
 	if h, ok := m.handlers[key{kind, id}]; ok {
-		h(s, i)
+		h.HandleInteraction(s, i)
 	}
 }
 
