@@ -16,7 +16,7 @@ func TestRouter(t *testing.T) {
 		commands := []string{"ping", "hello", "world"}
 
 		for _, cmd := range commands {
-			r.AddInteractionHandler(discordgo.InteractionApplicationCommand, cmd, stubHandler)
+			r.AddInteractionHandler(discordgo.InteractionApplicationCommand, cmd, InteractionHandlerFunc(stubHandler))
 		}
 
 		for _, cmd := range commands {

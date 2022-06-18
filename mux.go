@@ -27,8 +27,24 @@ func NewRouter() *Mux {
 	}
 }
 
-func (m *Mux) AddInteractionHandler(kind discordgo.InteractionType, id string, handler InteractionHandlerFunc) {
+func (m *Mux) AddInteractionHandler(kind discordgo.InteractionType, id string, handler InteractionHandler) {
 	m.handlers[key{kind, id}] = handler
+}
+
+func (m *Mux) ApplicationCommand(id string, handler InteractionHandler) {
+	m.AddInteractionHandler(discordgo.InteractionApplicationCommand, id, handler)
+}
+
+func (m *Mux) ApplicationCommandAutoComplete(id string, handler InteractionHandler) {
+	m.AddInteractionHandler(discordgo.InteractionApplicationCommandAutocomplete, id, handler)
+}
+
+func (m *Mux) MessageComponent(id string, handler InteractionHandler) {
+	m.AddInteractionHandler(discordgo.InteractionMessageComponent, id, handler)
+}
+
+func (m *Mux) ModalSubmit(id string, handler InteractionHandler) {
+	m.AddInteractionHandler(discordgo.InteractionModalSubmit, id, handler)
 }
 
 func (m *Mux) HandleInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
