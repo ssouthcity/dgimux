@@ -48,24 +48,26 @@ func (m *Mux) ModalSubmit(id string, handler InteractionHandler) {
 }
 
 func (m *Mux) HandleInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	kind := i.Type
-	id := m.resolveID(i)
+	k := m.resolveKey(i)
 
-	if h, ok := m.handlers[key{kind, id}]; ok {
+	if h, ok := m.handlers[k]; ok {
 		h.HandleInteraction(s, i)
 	}
 }
 
-func (m *Mux) resolveID(i *discordgo.InteractionCreate) string {
+func (m *Mux) resolveKey(i *discordgo.InteractionCreate) key {
+	var id string
+
 	switch i.Type {
 	case discordgo.InteractionApplicationCommand:
-		return i.ApplicationCommandData().Name
+		id = i.ApplicationCommandData().Name
 	case discordgo.InteractionApplicationCommandAutocomplete:
-		return i.ApplicationCommandData().Name
+		id = i.ApplicationCommandData().Name
 	case discordgo.InteractionMessageComponent:
-		return i.MessageComponentData().CustomID
+		id = i.MessageComponentData().CustomID
 	case discordgo.InteractionModalSubmit:
-		return i.ModalSubmitData().CustomID
+		id = i.ModalSubmitData().CustomID
 	}
-	return ""
+
+	return key{i.Type, id}
 }
